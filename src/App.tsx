@@ -30,7 +30,7 @@ function App() {
       if(proses){
        const resultProsesReadHeader = await prosesReadHeader();
        console.log(resultProsesReadHeader);
-      //  prosesDataMaterial(resultProsesReadHeader);
+      prosesDataMaterial(resultProsesReadHeader[0][1]);
       }else
         alert('proses fail')  
     }else
@@ -71,7 +71,7 @@ function App() {
   }
   const prosesReadHeader = async () => {
     const titleHeaderExcel:string[][]= [['ADDITIONAL DATA','MATERIALS','PARTS'],['SPECIAL NOTE']];
-    const resultProsesReadHeader:ReadHeaderType[][] = [];
+    let resultProsesReadHeader:ReadHeaderType[][] = new Array();
 
     const row_start = (valueTitleHeaderExceldata:string[], indexTitleHeaderExceldata:number) =>{
       let rowProsesReadHeaderCol_start:number = -1;
@@ -142,31 +142,32 @@ function App() {
     }
 
     try{
-      titleHeaderExcel.forEach(async (valueTitleHeaderExcel:string[], indexTitleHeaderExcel:number)=>{
+      titleHeaderExcel.forEach( (valueTitleHeaderExcel:string[], indexTitleHeaderExcel:number)=>{
         let statusProsesReadHeader:boolean = true;
-        const resultProsesReadHeaderCol:ReadHeaderType[] = []; 
+        let resultProsesReadHeaderCol:ReadHeaderType[] = new Array(); 
 
-        const resultRowStart = await row_start(valueTitleHeaderExcel,indexTitleHeaderExcel);
-        const resultRowEnd = await row_end(indexTitleHeaderExcel);
+        const resultRowStart = row_start(valueTitleHeaderExcel,indexTitleHeaderExcel);
+        const resultRowEnd = row_end(indexTitleHeaderExcel);
         if(resultRowStart === -1 || resultRowEnd === -1)
           statusProsesReadHeader = false;
 
-        await valueTitleHeaderExcel.forEach(async (valueTitleHeader:string , indexTitleHeader:number)=> {
-          const resultColStart = await col_start(valueTitleHeader, indexTitleHeader,resultRowStart);
-          const resultcolEnd = await col_end(valueTitleHeaderExcel, indexTitleHeader,resultRowStart);
+        valueTitleHeaderExcel.forEach( (valueTitleHeader:string , indexTitleHeader:number)=> {
+          const resultColStart = col_start(valueTitleHeader, indexTitleHeader,resultRowStart);
+          const resultcolEnd = col_end(valueTitleHeaderExcel, indexTitleHeader,resultRowStart);
 
-          resultProsesReadHeaderCol[indexTitleHeader] = {
+          resultProsesReadHeaderCol = [...resultProsesReadHeaderCol,{
             result: statusProsesReadHeader,
             name: valueTitleHeader,
             colom_start: resultColStart,
             colom_end: resultcolEnd,
             row_start: resultRowStart,
             row_end: resultRowEnd,
-          }
+          }]
+         
         })
 
-        console.log(resultProsesReadHeaderCol[0]);
-        resultProsesReadHeader[indexTitleHeaderExcel] = resultProsesReadHeaderCol;
+        // console.log(resultProsesReadHeaderCol);
+        resultProsesReadHeader.push(resultProsesReadHeaderCol);
         if(!statusProsesReadHeader)
           console.error('proses read header fail');
 
@@ -175,23 +176,44 @@ function App() {
     catch(err:any){
       alert(err.message);
     }
+    // console.log(resultProsesReadHeader);
     return resultProsesReadHeader;
   }
 
   // ------------------------------------------------------------------ material
-
-  type materialType = {
-    fab_no: string,
-    descrpition : string,
-    qty: string,
-  }
-  const [material, setMaterial] = useState<materialType[]>([]);
+  type dataSubHeaderType = {
+    title:string,
+    colom_start:number,
+    colom_end:number,
+  };
+  const [material, setMaterial] = useState<any[]>([]);
   const prosesDataMaterial = async (dataTitleHeader:ReadHeaderType) => {
     if(dataTitleHeader.result){
-      let dataMaterial:materialType[];
+      let dataMaterial:any[];
       try{
-        for(let rowIndex = dataTitleHeader.row_start; rowIndex <= dataTitleHeader.row_end; rowIndex++){
-          console.log(dataExecl[rowIndex]);
+        const dataSubHeaderExecl = dataExecl[dataTitleHeader.row_start+1].slice(dataTitleHeader.colom_start, dataTitleHeader.colom_end+1)
+        console.log(dataSubHeaderExecl);
+        let dataSubHeader:dataSubHeaderType[] = new Array()
+        dataSubHeaderExecl.forEach((valueSubHeader:string,indexSubHeader:number) =>{
+          if(valueSubHeader != ''){
+            dataSubHeader = [...dataSubHeader,{
+              title:valueSubHeader,
+              colom_start:indexSubHeader,
+              colom_end:indexSubHeader,
+            }]
+          }else{
+            if(dataSubHeader.length > 0)
+              dataSubHeader[dataSubHeader.length-1].colom_end += 1;
+          }
+        })
+        console.log(dataSubHeader);
+
+        for(let rowIndex = dataTitleHeader.row_start+1; rowIndex <= dataTitleHeader.row_end; rowIndex++){
+          // console.log(dataExecl[rowIndex].slice(dataTitleHeader.colom_start, dataTitleHeader.colom_end+1));
+          let dataMaterialCol:any[];
+          dataSubHeader.forEach((valueSubHeader:dataSubHeaderType)=>{
+            
+          })
         }
       }catch(err:any){
         alert(err.message);
@@ -202,7 +224,6 @@ function App() {
       setProses(false);
     }
   }
-
  
 
   return (
