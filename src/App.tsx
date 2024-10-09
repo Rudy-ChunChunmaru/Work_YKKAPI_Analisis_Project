@@ -28,9 +28,9 @@ function App() {
     if(dataExecl.length > 0){
       prosesDataTitle();
       if(proses){
-       const resultProsesReadHeader = await prosesReadHeader();
-       console.log(resultProsesReadHeader);
-      prosesDataMaterial(resultProsesReadHeader[0][1]);
+        const resultProsesReadHeader = await prosesReadHeader();
+        // console.log(resultProsesReadHeader);
+        prosesDataMaterial(resultProsesReadHeader[0][1]);
       }else
         alert('proses fail')  
     }else
@@ -186,13 +186,16 @@ function App() {
     colom_start:number,
     colom_end:number,
   };
+  type dataMaterialType = {
+    title:string
+    value:string
+  }
   const [material, setMaterial] = useState<any[]>([]);
   const prosesDataMaterial = async (dataTitleHeader:ReadHeaderType) => {
     if(dataTitleHeader.result){
-      let dataMaterial:any[];
       try{
         const dataSubHeaderExecl = dataExecl[dataTitleHeader.row_start+1].slice(dataTitleHeader.colom_start, dataTitleHeader.colom_end+1)
-        console.log(dataSubHeaderExecl);
+        // console.log(dataSubHeaderExecl);
         let dataSubHeader:dataSubHeaderType[] = new Array()
         dataSubHeaderExecl.forEach((valueSubHeader:string,indexSubHeader:number) =>{
           if(valueSubHeader != ''){
@@ -206,15 +209,30 @@ function App() {
               dataSubHeader[dataSubHeader.length-1].colom_end += 1;
           }
         })
-        console.log(dataSubHeader);
-
-        for(let rowIndex = dataTitleHeader.row_start+1; rowIndex <= dataTitleHeader.row_end; rowIndex++){
+        // console.log(dataSubHeader);
+        let dataMaterial:dataMaterialType[][] = new Array();
+        for(let rowIndex = dataTitleHeader.row_start+2; rowIndex <= dataTitleHeader.row_end-1; rowIndex++){
           // console.log(dataExecl[rowIndex].slice(dataTitleHeader.colom_start, dataTitleHeader.colom_end+1));
-          let dataMaterialCol:any[];
-          dataSubHeader.forEach((valueSubHeader:dataSubHeaderType)=>{
-            
-          })
+          const Fabric:string = dataExecl[rowIndex].slice(dataTitleHeader.colom_start+dataSubHeader[2].colom_start, dataTitleHeader.colom_start+1+dataSubHeader[2].colom_end).join('');
+          let dataMaterialCol:dataMaterialType[] = new Array();
+          if(Fabric !== ''){
+            dataSubHeader.forEach((valueSubHeader:dataSubHeaderType, indexSubHeader:number)=>{
+              dataMaterialCol[indexSubHeader] = {
+                title:valueSubHeader.title,
+                value: indexSubHeader === 5 ? dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join('  ') : dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join('')
+              }
+            })
+            dataMaterial = [...dataMaterial,[...dataMaterialCol]]
+          }else{
+            if(dataMaterial.length !== 0){
+              dataSubHeader.forEach((valueSubHeader:dataSubHeaderType, indexSubHeader:number)=>{
+                dataMaterial[dataMaterial.length-1][indexSubHeader].value += String.fromCharCode(10) +' '+ (indexSubHeader === 5 ? dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join('  ') : dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join(''));
+              })
+            }
+          }
         }
+        console.log(dataMaterial);
+
       }catch(err:any){
         alert(err.message);
         setProses(false);
