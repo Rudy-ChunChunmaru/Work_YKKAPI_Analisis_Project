@@ -29,8 +29,9 @@ function App() {
       prosesDataTitle();
       if(proses){
         const resultProsesReadHeader = await prosesReadHeader();
-        // console.log(resultProsesReadHeader);
+        console.log(resultProsesReadHeader);
         prosesDataMaterial(resultProsesReadHeader[0][1]);
+        prosesDataPart(resultProsesReadHeader[0][2]);
       }else
         alert('proses fail')  
     }else
@@ -180,17 +181,20 @@ function App() {
     return resultProsesReadHeader;
   }
 
-  // ------------------------------------------------------------------ material
   type dataSubHeaderType = {
     title:string,
     colom_start:number,
     colom_end:number,
   };
-  type dataMaterialType = {
+  type dataType = {
     title:string
     value:string
   }
-  const [material, setMaterial] = useState<any[]>([]);
+
+  // ------------------------------------------------------------------ material
+ 
+  const [materialHeader, setMaterialHeader] = useState<dataSubHeaderType[]>(new Array());
+  const [material, setMaterial] = useState<dataType[][]>(new Array());
   const prosesDataMaterial = async (dataTitleHeader:ReadHeaderType) => {
     if(dataTitleHeader.result){
       try{
@@ -210,29 +214,38 @@ function App() {
           }
         })
         // console.log(dataSubHeader);
-        let dataMaterial:dataMaterialType[][] = new Array();
+        setMaterialHeader(dataSubHeader);
+       
+        let dataMaterial:dataType[][] = new Array();
         for(let rowIndex = dataTitleHeader.row_start+2; rowIndex <= dataTitleHeader.row_end-1; rowIndex++){
           // console.log(dataExecl[rowIndex].slice(dataTitleHeader.colom_start, dataTitleHeader.colom_end+1));
           const Fabric:string = dataExecl[rowIndex].slice(dataTitleHeader.colom_start+dataSubHeader[2].colom_start, dataTitleHeader.colom_start+1+dataSubHeader[2].colom_end).join('');
-          let dataMaterialCol:dataMaterialType[] = new Array();
+          let dataMaterialCol:dataType[] = new Array();
           if(Fabric !== ''){
             dataSubHeader.forEach((valueSubHeader:dataSubHeaderType, indexSubHeader:number)=>{
               dataMaterialCol[indexSubHeader] = {
                 title:valueSubHeader.title,
-                value: indexSubHeader === 5 ? dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join('  ') : dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join('')
+                value: indexSubHeader === 5 ? dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).filter(Boolean).join('  ') : dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).filter(Boolean).join('')
               }
             })
             dataMaterial = [...dataMaterial,[...dataMaterialCol]]
           }else{
             if(dataMaterial.length !== 0){
               dataSubHeader.forEach((valueSubHeader:dataSubHeaderType, indexSubHeader:number)=>{
-                dataMaterial[dataMaterial.length-1][indexSubHeader].value += String.fromCharCode(10) +' '+ (indexSubHeader === 5 ? dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join('  ') : dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end).join(''));
+                const dataExeclSlice = dataExecl[rowIndex].slice(dataTitleHeader.colom_start+valueSubHeader.colom_start, dataTitleHeader.colom_start+1+valueSubHeader.colom_end);
+                if(dataExeclSlice.join('') != ''){
+                  let spase = ' '
+                  if(indexSubHeader == 5)
+                    spase = String.fromCharCode(13)
+                  if(indexSubHeader == 0)
+                    spase = ','
+                  dataMaterial[dataMaterial.length-1][indexSubHeader].value += spase + (indexSubHeader === 5 ? dataExeclSlice.filter(Boolean).join('  ') : dataExeclSlice.filter(Boolean).join(''));
+                }
               })
             }
           }
         }
-        console.log(dataMaterial);
-
+        setMaterial(dataMaterial);
       }catch(err:any){
         alert(err.message);
         setProses(false);
@@ -242,7 +255,24 @@ function App() {
       setProses(false);
     }
   }
- 
+
+  // ------------------------------------------------------------------ Part
+  const [partHeader, setPartHeader] = useState<dataSubHeaderType[]>(new Array());
+  const [part, setPart] = useState<dataType[][]>(new Array());
+  const prosesDataPart = async (dataTitleHeader:ReadHeaderType) => {
+    if(dataTitleHeader.result){
+      try{
+        const dataSubHeaderExecl = dataExecl[dataTitleHeader.row_start+1].slice(dataTitleHeader.colom_start, dataTitleHeader.colom_end+1)
+        console.log(dataSubHeaderExecl)
+      }catch(err:any){
+        alert(err.message);
+        setProses(false);
+      }
+    }else{
+      alert('proses fail colom head fail !!!');
+      setProses(false);
+    }
+  }
 
   return (
     <>
@@ -255,18 +285,44 @@ function App() {
       </div>
       <div><input type='button' value='proses data' onClick={() => startProsesData()} /></div>
       <h1>{title}</h1>
-      <table>
-        <thead>
-          <tr>
-            <th>fab_no</th>
-            <th>descrpition</th>
-            <th>qty</th>
-          </tr>
-        </thead>
-        <tbody>
-
-        </tbody>
-      </table>
+      
+      {
+        materialHeader.length > 0 &&
+        material.length > 0 &&
+        <div>
+          <h2>MATERIAL</h2>
+          <table id='MaterialTable'>
+            <thead>
+              <tr>
+              {
+                materialHeader.map((valueHeader,indexHeader)=>{
+                  return(
+                    <th key={indexHeader} className='SubHeader'>{valueHeader.title}</th>
+                  )
+                })
+              }
+              </tr>
+            </thead>
+            <tbody>
+              {
+                material.map((valueMaterial,indexMaterial)=>{
+                  return(
+                    <tr key={indexMaterial} >
+                      {
+                        valueMaterial.map((valueMaterialCol ,indexMaterialCol)=>{
+                          return (
+                            <td key={indexMaterialCol} className='DataBody'>{valueMaterialCol.value}</td>
+                          )
+                        })
+                      }
+                    </tr>
+                  )
+                })
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </>
   )
 }
