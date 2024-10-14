@@ -493,7 +493,7 @@ function App() {
       <div className="w-full text-center text-xl font-bold">{title}</div>
       <div className="flex flex-col justify-between gap-2 px-5">
         {materialHeader.length > 0 && material.length > 0 && (
-          <div className="w-full ">
+          <div className="w-full">
             <div className="text-md flex w-full justify-between bg-slate-200 px-2 text-left font-bold">
               <div>MATERIAL</div>
               <div
@@ -554,43 +554,63 @@ function App() {
         )}
         {partHeader.length > 0 && part.length > 0 && (
           <div className="w-full">
-            <div className="text-md w-full bg-slate-200 px-2 text-left font-bold">
-              PART
+            <div className="text-md flex w-full justify-between bg-slate-200 px-2 text-left font-bold">
+              <div>PART</div>
+              <div
+                  className="bg-slate-400 px-2 hover:bg-slate-500"
+                  onClick={async () => {
+                    let dataTablePart;
+                    try {
+                      dataTablePart =
+                        document.getElementById("tablePart")?.innerHTML;
+                      await navigator.clipboard.writeText(
+                        dataTablePart ? dataTablePart : ""
+                      );
+                      console.log("Content copied to clipboard");
+                    } catch (err) {
+                      console.error("Failed to copy: ", err);
+                    }
+                  }}
+                >
+                  Copy to Clipbord
+                </div>
             </div>
-            <table
-              id="MaterialTable"
-              className="w-full table-auto border-collapse border border-slate-500"
-            >
-              <thead>
-                <tr>
-                  {partHeader.map((valueHeader, indexHeader) => {
+            <div id='tablePart' >
+              <table
+                id="MaterialTable"
+                className="w-full table-auto border-collapse border border-slate-500"
+              >
+                <thead>
+                  <tr>
+                    {partHeader.map((valueHeader, indexHeader) => {
+                      return (
+                        <th key={indexHeader} className="SubHeader">
+                          {valueHeader.title}
+                        </th>
+                      );
+                    })}
+                    <th key={partHeader.length} className="SubHeader">
+                      {"At Site"}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {part.map((valuePart, indexPart) => {
                     return (
-                      <th key={indexHeader} className="SubHeader">
-                        {valueHeader.title}
-                      </th>
+                      <tr key={indexPart}>
+                        {valuePart.map((valuePartCol, indexPartCol) => {
+                          return (
+                            <td key={indexPartCol} className="DataBody">
+                              {valuePartCol.value}
+                            </td>
+                          );
+                        })}
+                      </tr>
                     );
                   })}
-                  <th key={partHeader.length} className="SubHeader">
-                    {"At Site"}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {part.map((valuePart, indexPart) => {
-                  return (
-                    <tr key={indexPart}>
-                      {valuePart.map((valuePartCol, indexPartCol) => {
-                        return (
-                          <td key={indexPartCol} className="DataBody">
-                            {valuePartCol.value}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
