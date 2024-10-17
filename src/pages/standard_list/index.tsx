@@ -1,6 +1,8 @@
 // standar list pagess
 import * as XLSX from "xlsx";
 import { useState } from "react";
+import localforage from "localforage";
+import { localstorageMaterial,localstoragePart } from "@/share/StoreageList";
 
 function Standar_list() {
   const [proses, setProses] = useState<boolean>(true);
@@ -19,10 +21,25 @@ function Standar_list() {
       header: 1,
       defval: "",
     });
-    console.log(worksheet);
+    // console.log(worksheet);
     setNameExeclSheet(workbook.SheetNames[0]);
     setDataExecl(jsonData);
   };
+
+  const storeToLocalforage = async () => {
+    localforage.setItem(localstorageMaterial, {headerMaterial:materialHeader,dataMaterial:material})
+    .then(
+      () =>  console.log("data Material store to localforage")
+    ).catch(
+      (error) =>console.error("error when data Material store to localforage, massage:",error) 
+    );
+    localforage.setItem(localstoragePart, {headerPart:partHeader,dataPart:part})
+    .then(
+      () => console.log("data Part store to localforage")
+    ).catch(
+      (error) =>console.error("error when data Part store to localforage, massage:",error) 
+    );
+  }
 
   const startProsesData = async () => {
     if (dataExecl.length > 0) {
@@ -30,8 +47,10 @@ function Standar_list() {
       if (proses) {
         const resultProsesReadHeader = await prosesReadHeader();
         // console.log(resultProsesReadHeader);
-        prosesDataMaterial(resultProsesReadHeader[0][1]);
-        prosesDataPart(resultProsesReadHeader[0][2]);
+        await prosesDataMaterial(resultProsesReadHeader[0][1]);
+        await prosesDataPart(resultProsesReadHeader[0][2]);
+        storeToLocalforage();
+      
       } else alert("proses fail");
     } else alert("proses fail");
   };
@@ -423,12 +442,12 @@ function Standar_list() {
                 .join("") === "(AT SITE)"
             ) {
               condisionAtSite = true;
-              console.log(
-                dataExecl[rowIndex].slice(
-                  dataTitleHeader.colom_start + dataSubHeader[0].colom_start,
-                  dataTitleHeader.colom_start + 1 + dataSubHeader[0].colom_end
-                )
-              );
+              // console.log(
+              //   dataExecl[rowIndex].slice(
+              //     dataTitleHeader.colom_start + dataSubHeader[0].colom_start,
+              //     dataTitleHeader.colom_start + 1 + dataSubHeader[0].colom_end
+              //   )
+              // );
             } else {
               if (dataPart.length !== 0) {
                 dataSubHeader.forEach(
@@ -507,7 +526,7 @@ function Standar_list() {
                     await navigator.clipboard.writeText(
                       dataTableMaterial ? dataTableMaterial : ""
                     );
-                    console.log("Content copied to clipboard");
+                    // console.log("Content copied to clipboard");
                   } catch (err) {
                     console.error("Failed to copy: ", err);
                   }
@@ -567,7 +586,7 @@ function Standar_list() {
                       await navigator.clipboard.writeText(
                         dataTablePart ? dataTablePart : ""
                       );
-                      console.log("Content copied to clipboard");
+                      // console.log("Content copied to clipboard");
                     } catch (err) {
                       console.error("Failed to copy: ", err);
                     }
