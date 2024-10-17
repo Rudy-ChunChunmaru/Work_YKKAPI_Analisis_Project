@@ -1,14 +1,33 @@
 // standar list pagess
 import * as XLSX from "xlsx";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import localforage from "localforage";
-import { localstorageMaterial,localstoragePart } from "@/share/StoreageList";
+import { localstorageMaterial, localstoragePart } from "@/share/StoreageList";
 
 function Standar_list() {
   const [proses, setProses] = useState<boolean>(true);
   const [nameExeclSheet, setNameExeclSheet] = useState<string>("");
   const [dataExecl, setDataExecl] = useState<any[]>([]);
   const [title, setTitle] = useState<string>("");
+
+  useEffect(() => {
+    let getlocalstoragematerial: { status: boolean; value?: any } = {
+      status: false,
+      value: undefined,
+    };
+    console.log("test");
+    localforage
+      .getItem(localstorageMaterial)
+      .then((valuematerial) => {
+        getlocalstoragematerial = { status: true, value: valuematerial };
+      })
+      .catch((error) => {
+        getlocalstoragematerial = { status: false, value: undefined };
+      });
+    if (getlocalstoragematerial.status) {
+      console.log(getlocalstoragematerial.value);
+    }
+  }, []);
 
   const handleChange = async (e: any) => {
     e.preventDefault();
@@ -27,19 +46,28 @@ function Standar_list() {
   };
 
   const storeToLocalforage = async () => {
-    localforage.setItem(localstorageMaterial, {headerMaterial:materialHeader,dataMaterial:material})
-    .then(
-      () =>  console.log("data Material store to localforage")
-    ).catch(
-      (error) =>console.error("error when data Material store to localforage, massage:",error) 
-    );
-    localforage.setItem(localstoragePart, {headerPart:partHeader,dataPart:part})
-    .then(
-      () => console.log("data Part store to localforage")
-    ).catch(
-      (error) =>console.error("error when data Part store to localforage, massage:",error) 
-    );
-  }
+    localforage
+      .setItem(localstorageMaterial, {
+        headerMaterial: materialHeader,
+        dataMaterial: material,
+      })
+      .then(() => console.log("data Material store to localforage"))
+      .catch((error) =>
+        console.error(
+          "error when data Material store to localforage, massage:",
+          error
+        )
+      );
+    localforage
+      .setItem(localstoragePart, { headerPart: partHeader, dataPart: part })
+      .then(() => console.log("data Part store to localforage"))
+      .catch((error) =>
+        console.error(
+          "error when data Part store to localforage, massage:",
+          error
+        )
+      );
+  };
 
   const startProsesData = async () => {
     if (dataExecl.length > 0) {
@@ -50,7 +78,6 @@ function Standar_list() {
         await prosesDataMaterial(resultProsesReadHeader[0][1]);
         await prosesDataPart(resultProsesReadHeader[0][2]);
         storeToLocalforage();
-      
       } else alert("proses fail");
     } else alert("proses fail");
   };
@@ -492,7 +519,7 @@ function Standar_list() {
             <input
               type="file"
               value=""
-              onInput={(e) => handleChange(e,)}
+              onInput={(e) => handleChange(e)}
               className="rounded-md bg-orange-500 p-1 hover:bg-orange-300"
             />
           </div>
@@ -577,25 +604,25 @@ function Standar_list() {
             <div className="text-md flex w-full justify-between bg-slate-200 px-2 text-left font-bold">
               <div>PART</div>
               <div
-                  className="bg-slate-400 px-2 hover:bg-slate-500"
-                  onClick={async () => {
-                    let dataTablePart;
-                    try {
-                      dataTablePart =
-                        document.getElementById("tablePart")?.innerHTML;
-                      await navigator.clipboard.writeText(
-                        dataTablePart ? dataTablePart : ""
-                      );
-                      // console.log("Content copied to clipboard");
-                    } catch (err) {
-                      console.error("Failed to copy: ", err);
-                    }
-                  }}
-                >
-                  Copy to Clipbord
-                </div>
+                className="bg-slate-400 px-2 hover:bg-slate-500"
+                onClick={async () => {
+                  let dataTablePart;
+                  try {
+                    dataTablePart =
+                      document.getElementById("tablePart")?.innerHTML;
+                    await navigator.clipboard.writeText(
+                      dataTablePart ? dataTablePart : ""
+                    );
+                    // console.log("Content copied to clipboard");
+                  } catch (err) {
+                    console.error("Failed to copy: ", err);
+                  }
+                }}
+              >
+                Copy to Clipbord
+              </div>
             </div>
-            <div id='tablePart' >
+            <div id="tablePart">
               <table
                 id="MaterialTable"
                 className="w-full table-auto border-collapse border border-slate-500"
