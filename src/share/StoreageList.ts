@@ -15,5 +15,5 @@ export const localforageConfig = () => {
   });
 };
 
-export const localstorageMaterial = "Local_Stroage_Material";
-export const localstoragePart = "Local_Stroage_Part";
+export const localstorageMaterialPart = "Local_Stroage_MaterialPart";
+export const localstoragePattern= "Local_Stroage_Pattern";
