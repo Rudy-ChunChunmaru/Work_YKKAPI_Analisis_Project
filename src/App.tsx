@@ -11,22 +11,29 @@ function App() {
   return(
     <div className="w-full h-full">
       <BrowserRouter>
-        <Navbar />
-        <Routes>
-          {
-            routerList.map((valueRouter,indexRouter)=>{
-              if(indexRouter == 0)
-                return(
-                  <Route key={indexRouter} index element={valueRouter.page}></Route>
-                )
-              else
-                return(
-                  <Route key={indexRouter} path={valueRouter.pageRoute} element={valueRouter.page}></Route>
-                )
-            })
-          }
-          <Route path="*" element={<Error_page />}></Route>
-        </Routes> 
+      <div className="flex flex-col justify-start w-full">
+        <div className="relative">
+          <Navbar />
+        </div>
+        <div className="relative">
+          <Routes>
+            {
+              routerList.map((valueRouter,indexRouter)=>{
+                if(indexRouter == 0)
+                  return(
+                    <Route key={indexRouter} index element={valueRouter.page}></Route>
+                  )
+                else
+                  return(
+                    <Route key={indexRouter} path={valueRouter.pageRoute} element={valueRouter.page}></Route>
+                  )
+              })
+            }
+            <Route path="*" element={<Error_page />}></Route>
+          </Routes>
+        </div>
+      </div>
+
       </BrowserRouter>
     </div>
   )

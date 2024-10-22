@@ -13,6 +13,8 @@ function Standar_list() {
   const [dataExecl, setDataExecl] = useState<any[]>([]);
   const [title, setTitle] = useState<string>("");
 
+  const [saveWindow, setSaveWindow] = useState<boolean>(false);
+
   // useEffect(() => {
   //   let getlocalstoragematerial: { status: boolean; value?: any } = {
   //     status: false,
@@ -490,7 +492,9 @@ function Standar_list() {
 
   return (
     <div className="w-full h-full">
-      <SaveStandarList   />
+      {saveWindow && 
+        (<SaveStandarList materialHeader={materialHeader} material={material} partHeader={partHeader} part={part} setSaveWindow={setSaveWindow}  />)
+      }
       <div className="flex w-full flex-col justify-between bg-gray-200 px-2 py-1">
         <div className="my-auto flex flex-row justify-start w-full gap-3">
           <div>
@@ -515,14 +519,14 @@ function Standar_list() {
             <input
               type="button"
               value="- LOAD -"
-              onInput={(e) => {}}
+              onClick={() => {setSaveWindow(!saveWindow)}}
               className="rounded-md bg-orange-500 p-1 hover:bg-orange-300"
             />
             {proses && materialHeader.length > 0 && material.length > 0 && partHeader.length > 0 && part.length > 0 &&  (
               <input
                 type="button"
                 value="- SAVE -"
-                onInput={(e) => {}}
+                onClick={() => {setSaveWindow(!saveWindow)}}
                 className="rounded-md bg-orange-500 p-1 hover:bg-orange-300"
               />
             )}
