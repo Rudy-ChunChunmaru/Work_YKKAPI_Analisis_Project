@@ -8,3 +8,14 @@ export type dataType = {
     title: string;
     value: string;
   };
+
+export type dataLocalstorageType = {
+    id:string,
+    name:string,
+    category:string,
+    note:string,
+    headerMaterial:dataSubHeaderType[],
+    dataMaterial:dataType[][],
+    headerPart:dataSubHeaderType[],
+    dataPart:dataType[][]
+}

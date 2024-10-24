@@ -6,6 +6,7 @@ import TableMaterial from "./tableMaterial";
 import {dataSubHeaderType,dataType} from "./type";
 import TablePart from "./tablePart";
 import SaveStandarList from "./saveStandarlist";
+import LoadStandarList from "./loadStandarlist";
 
 function Standar_list() {
   const [proses, setProses] = useState<boolean>(true);
@@ -14,6 +15,7 @@ function Standar_list() {
   const [title, setTitle] = useState<string>("");
 
   const [saveWindow, setSaveWindow] = useState<boolean>(false);
+  const [loadWindow, setLoadWindow] = useState<boolean>(false);
 
   // useEffect(() => {
   //   let getlocalstoragematerial: { status: boolean; value?: any } = {
@@ -58,7 +60,6 @@ function Standar_list() {
         // console.log(resultProsesReadHeader);
         await prosesDataMaterial(resultProsesReadHeader[0][1]);
         await prosesDataPart(resultProsesReadHeader[0][2]);
-        await storeToLocalforage();
       } else alert("proses fail");
     } else alert("proses fail");
   };
@@ -492,6 +493,9 @@ function Standar_list() {
 
   return (
     <div className="w-full h-full">
+      {loadWindow && 
+        (<LoadStandarList setMaterialHeader={setMaterialHeader} setMaterial={setMaterial} setPartHeader={setPartHeader} setPart={setPart} setLoadWindow={setLoadWindow} />)
+      }
       {saveWindow && 
         (<SaveStandarList materialHeader={materialHeader} material={material} partHeader={partHeader} part={part} setSaveWindow={setSaveWindow}  />)
       }
@@ -519,7 +523,7 @@ function Standar_list() {
             <input
               type="button"
               value="- LOAD -"
-              onClick={() => {setSaveWindow(!saveWindow)}}
+              onClick={() => {setLoadWindow(!loadWindow)}}
               className="rounded-md bg-orange-500 p-1 hover:bg-orange-300"
             />
             {proses && materialHeader.length > 0 && material.length > 0 && partHeader.length > 0 && part.length > 0 &&  (
