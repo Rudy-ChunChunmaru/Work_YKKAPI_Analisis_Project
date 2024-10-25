@@ -4,6 +4,7 @@ import { dataSubHeaderType,dataType,dataLocalstorageType } from './type';
 import { useEffect, useState } from "react";
 
 type SaveStandarListType = {
+    nameExeclSheet:'string',
     materialHeader:dataSubHeaderType[],
     material:dataType[][],
     partHeader:dataSubHeaderType[],
@@ -11,10 +12,11 @@ type SaveStandarListType = {
     setSaveWindow: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const SaveStandarList = ({materialHeader,material,partHeader,part,setSaveWindow}:SaveStandarListType) => {
-    const [number_id,setNumber_id] = useState<string>('test-id')
+const SaveStandarList = ({nameExeclSheet,materialHeader,material,partHeader,part,setSaveWindow}:SaveStandarListType) => {
+    const [number_id,setNumber_id] = useState<string>(nameExeclSheet)
     const [name,setName] = useState<string>('')
     const [category,setCategory] = useState<string>('')
+    const [brand,setBrand] = useState<string>('MADELA')
     const [note,setNote] = useState<string>('')
     const [dataLocalstorage,setDataLocalstorage] = useState<dataLocalstorageType[] | null>(null)
 
@@ -32,6 +34,7 @@ const SaveStandarList = ({materialHeader,material,partHeader,part,setSaveWindow}
         const addNewData = {
             id:number_id,
             name:name,
+            brand:brand,
             category:category,
             note:note,
             headerMaterial: materialHeader,
@@ -39,18 +42,64 @@ const SaveStandarList = ({materialHeader,material,partHeader,part,setSaveWindow}
             headerPart: partHeader,
             dataPart: part
         }
-        localforage
-        .setItem(localstorageMaterialPart, dataLocalstorage ? [ ...dataLocalstorage,addNewData] : [addNewData])
-        .then(() => {
-            console.log("data Material store to localforage")
-            setSaveWindow(false)
-        })
-        .catch((error) =>
-            console.error(
-              "error when data Material store to localforage, massage:",
-              error
-            )
-        );
+        if(Array.isArray(dataLocalstorage)){
+            const isResave = ():{status:boolean,key?:number} =>{
+                let result:{status:boolean,key?:number} = {status:false}
+                dataLocalstorage.some((val,indx)=>{
+                    if(val.id == addNewData.id){
+                        result = {status:true,key:indx}
+                        return
+                    }
+                })
+                if(result.status){
+                    return {status:true,key:result.key}
+                }else{
+                    return {status:false}
+                }
+            } 
+
+            const resave = isResave()
+
+            if(resave.status){
+                const updateLocalstorage = dataLocalstorage;
+                if(resave.key != undefined){
+                    updateLocalstorage[resave.key] = addNewData;
+                    localforage
+                    .setItem(localstorageMaterialPart, updateLocalstorage)
+                    .then(() => {
+                        console.log("data Material store to localforage")
+                        setSaveWindow(false)
+                    })
+                    .catch((error) =>
+                        console.error(
+                        "error when data Material store to localforage, massage:",
+                        error
+                        )
+                    );
+                }
+                else
+                    console.error("error when data Material store to localforage, massage: key not fount")
+            }else{
+                localforage
+                .setItem(localstorageMaterialPart, dataLocalstorage ? [ ...dataLocalstorage,addNewData] : [addNewData])
+                .then(() => {
+                    console.log("data Material store to localforage")
+                    setSaveWindow(false)
+                })
+                .catch((error) =>
+                    console.error(
+                      "error when data Material store to localforage, massage:",
+                      error
+                    )
+                );
+            }
+        }
+        
+
+        
+
+
+        
     }
    return <div className="w-full h-full absolute z-10 bg-slate-950/75">
         <div className="fixed w-full h-full flex justify-center items-center">
@@ -64,6 +113,7 @@ const SaveStandarList = ({materialHeader,material,partHeader,part,setSaveWindow}
                 <div className="flex flex-col justify-start gap-2 text-sm">
                     <div className="flex flex-row justify-between gap-4"><div>NUMBER ID :</div><input className="border-2 border-black rounded-md px-1" type="text" id="Number_id" name="Number_id" value={number_id} readOnly onChange={(e)=>{setNumber_id(e.target.value)}} /></div>
                     <div className="flex flex-row justify-between gap-4"><div>NAME :</div><input className="border-2 border-black rounded-md px-1" type="text" id="Name" name="Name" value={name} onChange={(e)=>{setName(e.target.value)}}/></div>
+                    <div className="flex flex-row justify-between gap-4"><div>BRAND :</div><input className="border-2 border-black rounded-md px-1" type="text" id="Name" name="Name" value={brand} onChange={(e)=>{setBrand(e.target.value)}}/></div>
                     <div className="flex flex-row justify-between gap-4"><div>CATEGORY :
                         </div>
                             <select className="border-2 border-black rounded-md px-1" id="Category" name="Category" defaultValue='' onChange={(e)=>{setCategory(e.target.value)}}>

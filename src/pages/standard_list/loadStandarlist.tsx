@@ -3,7 +3,6 @@ import { dataSubHeaderType, dataType,dataLocalstorageType } from "./type";
 import localforage from "localforage";
 import { localstorageMaterialPart } from "@/share/StoreageList";
 
-
 import { Grid,_ } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
 
@@ -11,7 +10,6 @@ import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 
 import { useEffect, useState } from "react";
-import { html } from "gridjs";
 
 
 type loadStandarListType = {
@@ -40,19 +38,65 @@ const LoadStandarList = ({setMaterialHeader,setMaterial,setPartHeader,setPart,se
     },[])
 
     const LoadDataTable = () => {
+        const [refes,setRefes]=useState<boolean>(false)
+
+        useEffect(()=>{},[refes])
+
         const dataloadTodataTable = (): any[] => {
             if(loadDataLocalstorage==null)
                 return [];
             else{
                 if(Array.isArray(loadDataLocalstorage)){
-                    return [...loadDataLocalstorage.map((val)=>([val.id,val.name,val.category,val.note,val.id]))];
+                    return [...loadDataLocalstorage.map((val)=>(val && [val.id,val.name,val?.brand,val.category,val.note,val.id,val.id]))];
                 }
                 else return []
             }
         }
 
-        const doLoadDataStandarList = () => {
-            return loadDataLocalstorage.map((value,index)=>{return value.id=index ? value : })
+        const doLoadDataStandarList = (filtervalue:any):void => {
+            if(loadDataLocalstorage!==null && Array.isArray(loadDataLocalstorage)){
+                loadDataLocalstorage.map((val)=>{
+                    if(val.id==filtervalue && typeof filtervalue == 'string' ){
+                        if(Array.isArray(val.headerMaterial)){
+                            setMaterialHeader(val.headerMaterial)
+                            if(Array.isArray(val.dataMaterial)) {
+                                setMaterial(val.dataMaterial)
+                                console.log('material loaded !!!')
+
+                                if(Array.isArray(val.headerPart)){
+                                    setPartHeader(val.headerPart)
+                                    if(Array.isArray(val.dataPart)){
+                                        setPart(val.dataPart)
+                                        console.log('part loaded !!!')
+                                        setLoadWindow(false);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        
+                    }
+                })
+            }
+        }
+
+        const doDeleteDataStandarList = (filtervalue:any) => {
+            if(loadDataLocalstorage!==null && Array.isArray(loadDataLocalstorage)){
+                let keydeleted
+                const updateLoadDataLocalstorage = loadDataLocalstorage
+                loadDataLocalstorage.map((val,idx)=>{
+                    if(val.id==filtervalue && typeof filtervalue == 'string' )
+                        keydeleted = idx
+                })
+                if(keydeleted!==undefined){
+                    updateLoadDataLocalstorage.splice(keydeleted,1)
+                    localforage.setItem(localstorageMaterialPart,[...updateLoadDataLocalstorage]).then(
+                        ()=>{console.log('delete data succesfull !!!');setRefes(!refes)}
+                    ).catch(
+                        (e)=>{console.log(e)}
+                    )
+                }
+            }
         }
 
 
@@ -65,9 +109,11 @@ const LoadStandarList = ({setMaterialHeader,setMaterial,setPartHeader,setPart,se
                 columns={[
                     {name:"ID" ,sort:true},
                     {name:"Name" ,sort:true},
+                    {name:"Brand" ,sort:true},
                     {name:"Category" ,sort:true},
                     {name:"Note" ,sort:true},
-                    {name:"Actions",sort:false,formatter: (cells) => _(<button className="w-full px-2 border-2 border-black" onClick={()=>console.log(cells)}>LOAD</button>)},
+                    {name:"Load",sort:false,formatter: (cells) => _(<button className="w-fit px-2 border-2 border-black rounded-md" onClick={()=>doLoadDataStandarList(cells)}>LOAD</button>)},
+                    {name:"Delete",sort:false,formatter: (cells) => _(<button className="w-fit px-2 border-2 border-black rounded-md" onClick={()=>doDeleteDataStandarList(cells)}>DELETE</button>)},
                 ]}
                 pagination={{
                     limit: 5,

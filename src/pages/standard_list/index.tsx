@@ -497,7 +497,7 @@ function Standar_list() {
         (<LoadStandarList setMaterialHeader={setMaterialHeader} setMaterial={setMaterial} setPartHeader={setPartHeader} setPart={setPart} setLoadWindow={setLoadWindow} />)
       }
       {saveWindow && 
-        (<SaveStandarList materialHeader={materialHeader} material={material} partHeader={partHeader} part={part} setSaveWindow={setSaveWindow}  />)
+        (<SaveStandarList nameExeclSheet={nameExeclSheet} materialHeader={materialHeader} material={material} partHeader={partHeader} part={part} setSaveWindow={setSaveWindow}  />)
       }
       <div className="flex w-full flex-col justify-between bg-gray-200 px-2 py-1">
         <div className="my-auto flex flex-row justify-start w-full gap-3">
