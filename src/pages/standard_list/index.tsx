@@ -279,9 +279,7 @@ function Standar_list() {
 
   // ------------------------------------------------------------------ material
 
-  const [materialHeader, setMaterialHeader] = useState<dataSubHeaderType[]>(
-    new Array()
-  );
+  const [materialHeader, setMaterialHeader] = useState<dataSubHeaderType[]>(new Array());
   const [material, setMaterial] = useState<dataType[][]>(new Array());
   const prosesDataMaterial = async (dataTitleHeader: ReadHeaderType) => {
     if (dataTitleHeader.result) {

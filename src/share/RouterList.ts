@@ -1,3 +1,9 @@
+import React from "react";
+
+import Index_page from "@/pages/common/index";
+import Standar_list from "@/pages/standard_list";
+import Bom from "@/pages/bom";
+
 type routerListType = {
     id:number,
     title:string,
@@ -6,10 +12,6 @@ type routerListType = {
     childernRoute?:routerListType[]
 }
 
-import Bom from "@/pages/bom";
-import Index_page from "@/pages/common/index";
-import Standar_list from "@/pages/standard_list";
-import React from "react";
 
 const routerList:routerListType[] = [
     {

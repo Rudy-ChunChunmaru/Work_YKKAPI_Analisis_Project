@@ -10,6 +10,7 @@ import { ReactGrid, Column, Row } from "@silevis/reactgrid";
 import "@silevis/reactgrid/styles.css";
 
 import { useEffect, useState } from "react";
+import LoadDataTable from "@/components/load_data_table";
 
 
 type loadStandarListType = {
@@ -36,94 +37,6 @@ const LoadStandarList = ({setMaterialHeader,setMaterial,setPartHeader,setPart,se
             console.log("read load data fail !!!")
         })
     },[])
-
-    const LoadDataTable = () => {
-        const [refes,setRefes]=useState<boolean>(false)
-
-        useEffect(()=>{},[refes])
-
-        const dataloadTodataTable = (): any[] => {
-            if(loadDataLocalstorage==null)
-                return [];
-            else{
-                if(Array.isArray(loadDataLocalstorage)){
-                    return [...loadDataLocalstorage.map((val)=>(val && [val.id,val.name,val?.brand,val.category,val.note,val.id,val.id]))];
-                }
-                else return []
-            }
-        }
-
-        const doLoadDataStandarList = (filtervalue:any):void => {
-            if(loadDataLocalstorage!==null && Array.isArray(loadDataLocalstorage)){
-                loadDataLocalstorage.map((val)=>{
-                    if(val.id==filtervalue && typeof filtervalue == 'string' ){
-                        if(Array.isArray(val.headerMaterial)){
-                            setMaterialHeader(val.headerMaterial)
-                            if(Array.isArray(val.dataMaterial)) {
-                                setMaterial(val.dataMaterial)
-                                console.log('material loaded !!!')
-
-                                if(Array.isArray(val.headerPart)){
-                                    setPartHeader(val.headerPart)
-                                    if(Array.isArray(val.dataPart)){
-                                        setPart(val.dataPart)
-                                        console.log('part loaded !!!')
-                                        setLoadWindow(false);
-                                        return;
-                                    }
-                                }
-                            }
-                        }
-                        
-                    }
-                })
-            }
-        }
-
-        const doDeleteDataStandarList = (filtervalue:any) => {
-            if(loadDataLocalstorage!==null && Array.isArray(loadDataLocalstorage)){
-                let keydeleted
-                const updateLoadDataLocalstorage = loadDataLocalstorage
-                loadDataLocalstorage.map((val,idx)=>{
-                    if(val.id==filtervalue && typeof filtervalue == 'string' )
-                        keydeleted = idx
-                })
-                if(keydeleted!==undefined){
-                    updateLoadDataLocalstorage.splice(keydeleted,1)
-                    localforage.setItem(localstorageMaterialPart,[...updateLoadDataLocalstorage]).then(
-                        ()=>{console.log('delete data succesfull !!!');setRefes(!refes)}
-                    ).catch(
-                        (e)=>{console.log(e)}
-                    )
-                }
-            }
-        }
-
-
-        return (
-        <div className="flex flex-col justify-start gap-2 text-sm">
-            <Grid
-                data={[ 
-                    ...dataloadTodataTable()
-                ]}
-                columns={[
-                    {name:"ID" ,sort:true},
-                    {name:"Name" ,sort:true},
-                    {name:"Brand" ,sort:true},
-                    {name:"Category" ,sort:true},
-                    {name:"Note" ,sort:true},
-                    {name:"Load",sort:false,formatter: (cells) => _(<button className="w-fit px-2 border-2 border-black rounded-md" onClick={()=>doLoadDataStandarList(cells)}>LOAD</button>)},
-                    {name:"Delete",sort:false,formatter: (cells) => _(<button className="w-fit px-2 border-2 border-black rounded-md" onClick={()=>doDeleteDataStandarList(cells)}>DELETE</button>)},
-                ]}
-                pagination={{
-                    limit: 5,
-                }}
-            />
-        </div>
-        )
-    }
-
-
 
     const LoadDataTableTEST = () => {
         const dataloadTodataTable = (): any[] => {
@@ -192,7 +105,14 @@ const LoadStandarList = ({setMaterialHeader,setMaterial,setPartHeader,setPart,se
             <div className="mx-2 text-center">
                 LOAD DATA
             </div>
-            <LoadDataTable />
+            <LoadDataTable 
+                setMaterialHeader={setMaterialHeader}
+                setMaterial={setMaterial}
+                setPartHeader={setPartHeader}
+                setPart={setPart}
+                setLoadWindow={setLoadWindow}
+                loadDataLocalstorage={loadDataLocalstorage}
+            />
           </div>
         </div>
    </div>
