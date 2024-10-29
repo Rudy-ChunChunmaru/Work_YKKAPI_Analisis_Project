@@ -2,25 +2,28 @@ import { useState,useEffect } from "react"
 import localforage from "localforage"
 import { Grid,_ } from "gridjs-react";
 import "gridjs/dist/theme/mermaid.css";
-import { localstorageMaterialPart } from "../../share/StoreageList";
-import { dataSubHeaderType, dataType,dataLocalstorageType } from "../../pages/standard_list/type";
+import { localstorageMaterialPart } from "@/share/StoreageList";
+import { dataSubHeaderType, dataType } from "@/pages/standard_list/type";
+
 
 type LoadDataTableType = {
+    setAllData?:React.Dispatch<React.SetStateAction<any | null>>;
     setMaterialHeader:React.Dispatch<React.SetStateAction<dataSubHeaderType[]>>;
     setMaterial:React.Dispatch<React.SetStateAction<dataType[][]>>;
     setPartHeader:React.Dispatch<React.SetStateAction<dataSubHeaderType[]>>;
     setPart:React.Dispatch<React.SetStateAction<dataType[][]>>;
     setLoadWindow:React.Dispatch<React.SetStateAction<boolean>>;
-    loadDataLocalstorage:React.Dispatch<React.SetStateAction<dataLocalstorageType[]>>;
+    loadDataLocalstorage:any;
 }
 
 
-const LoadDataTable = ({setMaterialHeader,setMaterial,setPartHeader,setPart,setLoadWindow,loadDataLocalstorage}:LoadDataTableType) => {
+const LoadDataTable = ({setAllData,setMaterialHeader,setMaterial,setPartHeader,setPart,setLoadWindow,loadDataLocalstorage}:LoadDataTableType) => {
     const [refes,setRefes]=useState<boolean>(false)
 
     useEffect(()=>{},[refes])
 
     const dataloadTodataTable = (): any[] => {
+        console.log(loadDataLocalstorage);
         if(loadDataLocalstorage==null)
             return [];
         else{
@@ -46,8 +49,14 @@ const LoadDataTable = ({setMaterialHeader,setMaterial,setPartHeader,setPart,setL
                                 if(Array.isArray(val.dataPart)){
                                     setPart(val.dataPart)
                                     console.log('part loaded !!!')
-                                    setLoadWindow(false);
-                                    return;
+                                    if(setAllData == undefined){
+                                        setLoadWindow(false);
+                                        return;
+                                    }else{
+                                        setAllData(val)
+                                        setLoadWindow(false);
+                                        return;
+                                    }
                                 }
                             }
                         }
