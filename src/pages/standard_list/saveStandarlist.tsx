@@ -1,10 +1,10 @@
 import localforage from "localforage";
-import { localstorageMaterialPart, localstoragePattern } from "@/share/StoreageList";
+import { localstorageMaterialPart } from "@/share/StoreageList";
 import { dataSubHeaderType,dataType,dataLocalstorageType } from './type';
 import { useEffect, useState } from "react";
 
 type SaveStandarListType = {
-    nameExeclSheet:'string',
+    nameExeclSheet:string,
     materialHeader:dataSubHeaderType[],
     material:dataType[][],
     partHeader:dataSubHeaderType[],

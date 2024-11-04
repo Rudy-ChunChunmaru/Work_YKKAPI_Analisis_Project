@@ -1,4 +1,8 @@
-const BomFormula = () => {
+type BomFormulaType = {
+    allData : any;
+}
+
+const BomFormula = ({allData}:BomFormulaType) => {
     return <>test</>
 }  
 
