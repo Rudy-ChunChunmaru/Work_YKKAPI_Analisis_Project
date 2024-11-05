@@ -4,15 +4,17 @@ import BomPart from "./BomPart";
 import BomFormula from "./BomFormula";
 import BomLoad from "./BomLoad";
 
-import {MaterialListType} from "./type";
+import {MaterialListType,PartListType} from "./type";
 
 const Bom = () =>{
     const [window,setWindow] = useState<{'loadbom':boolean,'manufacturing':boolean,'part':boolean,'formula':boolean}>({'loadbom':true,'manufacturing':false,'part':false,'formula':false})
     const [allData,setAllData] = useState<any | null>(null)
-    const [bom,setBom] = useState<{'MaterialBom':MaterialListType[],'PartBom':{}[],'FormulaBom':{}[]} | null>(null)
+    const [bom,setBom] = useState<{'MaterialBom':MaterialListType[],'PartBom':PartListType[],'FormulaBom':{}[]} | null>(null)
     const [loadWindow,setLoadWindow] = useState<boolean>(true)
 
     useEffect(()=>{
+        if(allData == null)
+            setBom(null)
         
     },[allData])
 

@@ -4,7 +4,7 @@ import routerList from "@/share/RouterList";
 
 const Navbar = () => {
    return(
-      <div className="w-full bg-blue-100 flex flex-col justify-left px-5">
+      <div className="w-full bg-blue-100 flex flex-col justify-left px-5 pb-2">
         <div className="w-full py-1">
             M-Aru
         </div>
