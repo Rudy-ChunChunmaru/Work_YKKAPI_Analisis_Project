@@ -172,7 +172,7 @@ const BomManufacturing = ({allData,setBom,bom}:BomManufacturingType) => {
                     'Item_Code': '',
                     'Unit_Code': '',
                     'Cls_IOM': category ? category.toUpperCase()  : '',
-                    'Description': description,
+                    'Description': description ? description : '',
                     'Color': '',
                     'FabricationNo': fabricationNo ? (fabricationNo?.split("-").length > 1 ? `${fabricationNo?.split("-")[0]}-${fabricationNo?.split("-")[1]}` : fabricationNo ) : '',
                     'FabNo': fabricationNo ? (fabricationNo?.split("-").length > 1 ? `${fabricationNo?.split("-")[2]}` : fabricationNo ) : '',
@@ -233,7 +233,7 @@ const BomManufacturing = ({allData,setBom,bom}:BomManufacturingType) => {
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList(loadList())}>Load Data</div>
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([])}>Clear</div>
         </div>
-        <div className="w-full text-xs overflow-auto p-b-3 border-2">
+        <div className="w-full text-xs overflow-auto p-b-3 border-2 h-96">
             <ReactGrid rows={rows} columns={columns} onCellsChanged={(changes: CellChange<any>[]) => {applyChangesToList(changes)}} />
         </div>
     </div>

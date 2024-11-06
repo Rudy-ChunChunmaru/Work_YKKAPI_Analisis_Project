@@ -59,7 +59,7 @@ const Bom = () =>{
             {(allData == null) ? <LoadDataAlert /> : (
                 <>
                     {(window.manufacturing) &&  <BomManufacturing allData={allData} setBom={setBom} bom={bom} />}
-                    {(window.part) &&  <BomPart allData={allData} />}
+                    {(window.part) &&  <BomPart allData={allData} setBom={setBom} bom={bom} />}
                     {(window.formula) && <BomFormula allData={allData} />}
                 </>   
             )}

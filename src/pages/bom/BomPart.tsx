@@ -145,9 +145,13 @@ const BomPart = ({allData,setBom,bom}:BomPartType) => {
             else return undefined
         }
 
-        if(allData?.dataMaterial && Array.isArray(allData.dataMaterial)){
-            return [...allData.dataMaterial.map((value:any,index:number)=>{
-                const fabricationNo = findColValue(value,'FAB No.')
+        if(allData?.dataPart && Array.isArray(allData.dataPart)){
+            return [...allData.dataPart.map((value:any,index:number)=>{
+                const colour = findColValue(value,'COLOR');
+                const fs = findColValue(value,'At Site');
+                const remark2 = findColValue(value,'REMARKS');
+                const qtyUnit = findColValue(value,'QTY')
+                const partNo = findColValue(value,'PART No.')
                 const category = allData?.category;
                 const description = findColValue(value,'DESCRIPTION');
                 return { 
@@ -162,41 +166,65 @@ const BomPart = ({allData,setBom,bom}:BomPartType) => {
                     'Item_Code': '',
                     'Unit_Code': '',
                     'Cls_IOM': category ? category.toUpperCase()  : '',
-                    'Description': description,
-                    'Color': '',
-                    'FabricationNo': fabricationNo ? (fabricationNo?.split("-").length > 1 ? `${fabricationNo?.split("-")[0]}-${fabricationNo?.split("-")[1]}` : fabricationNo ) : '',
-                    'FabNo': fabricationNo ? (fabricationNo?.split("-").length > 1 ? `${fabricationNo?.split("-")[2]}` : fabricationNo ) : '',
-                    'Length': category ? (category == 'inner' ? `MI-${index+1}` : (category == 'outer' ? `MO-${index+1}` : `MX-${index+1}` )): '',
-                    'QtyUnit':findColValue(value,'QTY'),
-                    'Qty': 'MADELA_ORDER_WINDOW_DETAIL.Qty * QtyUnit',
+                    'Description': description ? description : '',
+                    'PartNo': partNo ? partNo : '',
+                    'Colour': colour ? colour : '',
+                    'QtyUnit': qtyUnit ? qtyUnit : '',
+                    'Qty': 'ROUND(QtyUnit, 0) * MADELA_ORDER_WINDOW_DETAIL.Qty',
                     'Remark': '',
-                    'Remark2': '',
+                    'Remark2': remark2 ? remark2 : '',
                     'Remark3': '',
                     'Remark4': '',
-                    'Weight_M': 'Prof_Master.M_WEIGHT_F',
-                    'Weight_kg': 'Length*Qty*weight_M/1000'
+                    'Remark5': '',
+                    'FS': fs ? fs : ''
                 }
             }
             )]
-        }else{
-            return []
-        }
+        }else return [];  
     }
 
+    const applyChangesToList = (
+        changes: CellChange<TextCell>[],
+    ) => {
+        changes.forEach((change) => {
+            try{
+                const listIndex = Number(change.rowId);
+                const fieldName = String(change.columnId);
+                // console.log(listIndex,fieldName,change.newCell.text)
+                // console.log(list[listIndex],list[listIndex])
+                if(list){
+                    setList(
+                        [...list.map((value,index)=>{
+                            if(index == listIndex){
+                                const Colmchange:MaterialListType = value;
+                                return {
+                                    ...Colmchange,
+                                    [fieldName]:change.newCell.text
+                                }
+                            }else return value;
+                        })]
+                    )
+                }
+            }catch(e){
+                alert('error on changes proses');
+            }
+        });
+        
+    };
 
-
-
-
-
+    useEffect(()=>{
+        if(list != undefined && list != getList())
+            setBom({'MaterialBom':bom?.MaterialBom ? bom?.MaterialBom : [],'PartBom':list,'FormulaBom': bom?.FormulaBom ? bom?.FormulaBom : []})
+    },[list])
 
     return <div className="w-full flex flex-col px-5 gap-2">
         <div className="w-full border-b-2 border-black">Part BOM</div>
         <div className="flex gap-2 bg-blue-200 px-2 py-1 rounded-md">
-            <div className="border-2 border-black rounded-md px-2 hover:px-3" >Load Data</div>
-            <div className="border-2 border-black rounded-md px-2 hover:px-3" >Clear</div>
+            <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList(loadList())}>Load Data</div>
+            <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([])}>Clear</div>
         </div>
-        <div className="w-full text-xs overflow-auto p-b-3 border-2">
-
+        <div className="relative rela w-full text-xs overflow-auto p-b-3 border-2 h-96">
+            <ReactGrid rows={rows} columns={columns} onCellsChanged={(changes: CellChange<any>[]) => {applyChangesToList(changes)}} />
         </div>
     </div>
 }  
