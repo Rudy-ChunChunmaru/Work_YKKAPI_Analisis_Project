@@ -63,3 +63,35 @@ export type PartListType = {
     Remark5?:string;
     FS?:string;
 }
+
+export type FromulaListType = {
+    BOM_ID?:string;
+    FormulaCode?:string;
+    Type?:string;
+    Formula?:string;
+    FormulaDesc?:string;
+    FormulaSQL?:string;
+    Result?:string;
+}
+
+export type variableType = {
+    title:string;
+    code:string;
+    value:number;
+}
+
+export type logicType = {
+    id:number;
+    code:string;
+    variable:string;
+    logic:string;
+    valueInput1:number;
+    valueInput2:number;
+    valueOutput:string;
+}
+
+export type FromulaType = {
+    variable:variableType[];
+    logic:logicType[];
+    FormulaList:FromulaListType[];
+}

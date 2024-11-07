@@ -1,13 +1,12 @@
 import { ReactGrid,Row,Column,CellChange,TextCell } from "@silevis/reactgrid";
 import React,{ useEffect,useState } from "react";
-import {MaterialListType} from "./type";
+import {MaterialListType,PartListType,FromulaType} from "./type";
 
 type BomManufacturingType = {
     allData : any;
-    setBom : React.Dispatch<React.SetStateAction<{MaterialBom: MaterialListType[];PartBom: {}[];FormulaBom: {}[];} | null>>;
-    bom : {MaterialBom: MaterialListType[];PartBom: {}[];FormulaBom: {}[];} | null;
+    setBom : React.Dispatch<React.SetStateAction<{MaterialBom: MaterialListType[];PartBom: PartListType[];Formula: FromulaType;}>>;
+    bom : {MaterialBom: MaterialListType[];PartBom: PartListType[];Formula: FromulaType;};
 }
-
 
 const getColumns = (): Column[] => [
     { columnId: "BOM_ID", width: 50 },
@@ -224,7 +223,7 @@ const BomManufacturing = ({allData,setBom,bom}:BomManufacturingType) => {
 
     useEffect(()=>{
         if(list != undefined && list != getList())
-            setBom({'MaterialBom':list,'PartBom':bom?.PartBom ? bom?.PartBom : [],'FormulaBom': bom?.FormulaBom ? bom?.FormulaBom : []})
+            setBom({...bom,'MaterialBom':list})
     },[list])
 
     return <div className="w-full flex flex-col px-5 gap-2">
@@ -233,7 +232,7 @@ const BomManufacturing = ({allData,setBom,bom}:BomManufacturingType) => {
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList(loadList())}>Load Data</div>
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([])}>Clear</div>
         </div>
-        <div className="w-full text-xs overflow-auto p-b-3 border-2 h-96">
+        <div className="w-full text-xs overflow-auto pb-3 border-2 h-96">
             <ReactGrid rows={rows} columns={columns} onCellsChanged={(changes: CellChange<any>[]) => {applyChangesToList(changes)}} />
         </div>
     </div>

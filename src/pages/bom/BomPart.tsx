@@ -1,11 +1,11 @@
 import { ReactGrid,Row,Column,CellChange,TextCell } from "@silevis/reactgrid";
 import React,{ useEffect,useState } from "react";
-import {MaterialListType,PartListType} from "./type";
+import {MaterialListType,PartListType,FromulaType} from "./type";
 
 type BomPartType = {
     allData : any;
-    setBom : React.Dispatch<React.SetStateAction<{MaterialBom: MaterialListType[];PartBom: PartListType[];FormulaBom: {}[];} | null>>;
-    bom : {MaterialBom: MaterialListType[];PartBom: PartListType[];FormulaBom: {}[];} | null;
+    setBom : React.Dispatch<React.SetStateAction<{MaterialBom: MaterialListType[];PartBom: PartListType[];Formula: FromulaType;}>>;
+    bom : {MaterialBom: MaterialListType[];PartBom: PartListType[];Formula: FromulaType;};
 }
 
 const getColumns = (): Column[] => [
@@ -145,6 +145,43 @@ const BomPart = ({allData,setBom,bom}:BomPartType) => {
             else return undefined
         }
 
+        const generateFormula = (qtyUnit:string,formulaLength:string):{result:boolean,code?:string} => {
+            let result = true;
+            let code = '';
+            let rumus = '';
+           
+            if(bom?.Formula){
+                if(qtyUnit)
+                    rumus = qtyUnit
+                if(formulaLength)
+                    rumus += `*(${formulaLength})`
+
+                
+                if(rumus){
+                    if(bom && bom?.Formula && bom.Formula?.FormulaList){
+                        const FormulaList = bom.Formula.FormulaList;
+                        console.log(FormulaList);
+                        if(Array.isArray(FormulaList) && FormulaList.length){
+                            
+                        }
+                        // setBom({..bom,'Formula':{...bom.Formula,FormulaList:[...bom.Formula.FormulaList.map((value)=>{
+
+                        // })]}})
+
+                    }
+                   
+                }else result = false
+
+
+            }
+
+            return({
+             result:result,
+             code:code
+            })
+
+        }
+
         if(allData?.dataPart && Array.isArray(allData.dataPart)){
             return [...allData.dataPart.map((value:any,index:number)=>{
                 const colour = findColValue(value,'COLOR');
@@ -154,6 +191,20 @@ const BomPart = ({allData,setBom,bom}:BomPartType) => {
                 const partNo = findColValue(value,'PART No.')
                 const category = allData?.category;
                 const description = findColValue(value,'DESCRIPTION');
+
+                const formulaLength = findColValue(value,'LENGTH')  
+                let formulaStirng = ''
+                if(formulaLength)
+                    formulaStirng = qtyUnit + '*(' + formulaLength + ')';
+                
+                let isnum = true
+                if(qtyUnit)
+                    isnum = /^\d+$/.test(qtyUnit);
+
+                let resultGenerate 
+                if((!isnum || formulaLength) && qtyUnit)
+                    resultGenerate =  generateFormula(qtyUnit,formulaLength ? formulaLength : '')
+
                 return { 
                     'BOM_ID': '',
                     'BOM_SUB_ID': '',
@@ -169,7 +220,7 @@ const BomPart = ({allData,setBom,bom}:BomPartType) => {
                     'Description': description ? description : '',
                     'PartNo': partNo ? partNo : '',
                     'Colour': colour ? colour : '',
-                    'QtyUnit': qtyUnit ? qtyUnit : '',
+                    'QtyUnit': formulaStirng ? formulaStirng : (qtyUnit ? qtyUnit : ''),
                     'Qty': 'ROUND(QtyUnit, 0) * MADELA_ORDER_WINDOW_DETAIL.Qty',
                     'Remark': '',
                     'Remark2': remark2 ? remark2 : '',
@@ -212,9 +263,11 @@ const BomPart = ({allData,setBom,bom}:BomPartType) => {
         
     };
 
+   
+
     useEffect(()=>{
         if(list != undefined && list != getList())
-            setBom({'MaterialBom':bom?.MaterialBom ? bom?.MaterialBom : [],'PartBom':list,'FormulaBom': bom?.FormulaBom ? bom?.FormulaBom : []})
+            setBom({...bom,'PartBom':list})
     },[list])
 
     return <div className="w-full flex flex-col px-5 gap-2">

@@ -4,17 +4,17 @@ import BomPart from "./BomPart";
 import BomFormula from "./BomFormula";
 import BomLoad from "./BomLoad";
 
-import {MaterialListType,PartListType} from "./type";
+import {MaterialListType,PartListType,FromulaType} from "./type";
 
 const Bom = () =>{
     const [window,setWindow] = useState<{'loadbom':boolean,'manufacturing':boolean,'part':boolean,'formula':boolean}>({'loadbom':true,'manufacturing':false,'part':false,'formula':false})
     const [allData,setAllData] = useState<any | null>(null)
-    const [bom,setBom] = useState<{'MaterialBom':MaterialListType[],'PartBom':PartListType[],'FormulaBom':{}[]} | null>(null)
+    const [bom,setBom] = useState<{'MaterialBom':MaterialListType[],'PartBom':PartListType[],'Formula':FromulaType}>({'MaterialBom':new Array(),'PartBom':new Array(),'Formula':{FormulaList:new Array(), variable:new Array(), logic:new Array()}})
     const [loadWindow,setLoadWindow] = useState<boolean>(true)
 
     useEffect(()=>{
         if(allData == null)
-            setBom(null)
+            setBom({'MaterialBom':new Array(),'PartBom':new Array(),'Formula':{FormulaList:new Array(), variable:new Array(), logic:new Array()}})
         
     },[allData])
 
@@ -60,7 +60,7 @@ const Bom = () =>{
                 <>
                     {(window.manufacturing) &&  <BomManufacturing allData={allData} setBom={setBom} bom={bom} />}
                     {(window.part) &&  <BomPart allData={allData} setBom={setBom} bom={bom} />}
-                    {(window.formula) && <BomFormula allData={allData} />}
+                    {(window.formula) && <BomFormula allData={allData} setBom={setBom} bom={bom} />}
                 </>   
             )}
         </div>
