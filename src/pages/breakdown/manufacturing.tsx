@@ -1,6 +1,6 @@
 import { ReactGrid,Row,Column,CellChange,TextCell } from "@silevis/reactgrid";
 import React,{ useEffect,useState } from "react";
-import {MaterialListType,PartListType,FromulaType} from "./type";
+import {MaterialListType,PartListType,FromulaType,FromulaListType} from "./type";
 
 type ManufacturingType = {
     allData : any;
@@ -131,7 +131,9 @@ const Manufacturing = ({allData,setBom,bom}:ManufacturingType) => {
         
     };
 
-    const makeFormula = () =>{
+    const makeFormula = async () =>{
+        let newFromulaArray:FromulaListType[] = new Array()
+
         const chekFromula = async(strformula:string,colom:string) => {
             let status = true
 
@@ -139,33 +141,73 @@ const Manufacturing = ({allData,setBom,bom}:ManufacturingType) => {
                 if(value.Formula == strformula && value.Type == 'm' && value.Colom == colom)
                     status = false
             })
-
+                
             return {
                 status : status,
                 formula : strformula
             }
         }
 
-        const addFromula = (strformula:string,colom:string) => {
-            const formulaList = bom.Formula.FormulaList.map((valueFromula)=>{
-                if(valueFromula.Type == 'm' && valueFromula.Colom == colom)
-                    return valueFromula
-            });
-            console.log(formulaList)
-
-            // setBom({...bom,'Formula':{...bom.Formula,FormulaList:[...formulaList,{Varibale:'',Type:'m',Colom:colom,Formula:strformula,Result:''}]}})
-
+        const addNewFormula = (Formula:string | undefined,colom:string) => {
+            if(newFromulaArray.filter((datavalue)=>datavalue.Formula == Formula && datavalue.Colom == colom).length == 0){
+                newFromulaArray.push({
+                    'Varibale': '',
+                    'Type': 'm',
+                    'Colom': colom,
+                    'Formula': Formula,
+                    'Result': '',
+                })
+            }
         }
 
-        ['HS','WS',...bom.Formula.variable.map((value)=>value.code)].map((value)=>{
+      
+        await ['HS','WS',...bom.Formula.variable.map((value)=>value.code)].map((value)=>{
             list.map((valueList)=>{
                 if(valueList.Length?.includes(value)){
-                    chekFromula(value,'Length').then((resultchek)=>{
-                        resultchek.status && addFromula(resultchek.formula,'Length')
+                    chekFromula(valueList.Length,'Length').then((resultchek)=>{
+                        resultchek.status && addNewFormula(valueList.Length,'Length')
                     })
                 }
             })
         })
+
+        return newFromulaArray
+    }
+
+    const saveFormula = (data:FromulaListType[]) =>{
+        const countLengDataM =  bom.Formula.FormulaList.filter((value)=>value.Type == 'm').length;
+        const addvariableindataFromula = [
+            ...data.map((val,ind)=>{
+                const varibale = `m${countLengDataM + ind + 1}`
+                return {
+                    ...val,
+                    Varibale:varibale
+                }
+            })
+        ]
+
+        setBom({...bom,'Formula':{...bom.Formula,
+            FormulaList:[...bom.Formula.FormulaList,...addvariableindataFromula]
+        }})
+
+        return addvariableindataFromula
+    }
+
+    const changeListToFromula = (data:FromulaListType[]) => {
+        const listchange = [...list.map((valuelist)=>{
+            const vairable = data.find((valuedata)=>valuedata.Formula == valuelist.Length)
+            if(vairable)
+                return {
+                    ...valuelist,
+                    Length:vairable.Varibale
+                }
+            else
+                return {
+                    ...valuelist,
+                }
+        })]
+
+        setList(listchange)
     }
 
     useEffect(()=>{
@@ -181,7 +223,11 @@ const Manufacturing = ({allData,setBom,bom}:ManufacturingType) => {
 
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([...getList(),...list])}>Add Row</div>
 
-            <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>makeFormula()}>Make Formula</div>
+            <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>{
+                makeFormula().then((data)=>{
+                    changeListToFromula(saveFormula(data))
+                })
+            }}>Make Formula</div>
         </div>
         <div className="w-full text-xs overflow-auto pb-3 border-2 h-96">
             <ReactGrid rows={rows} columns={columns} onCellsChanged={(changes: CellChange<any>[]) => {applyChangesToList(changes)}} />

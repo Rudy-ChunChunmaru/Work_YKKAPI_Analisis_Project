@@ -1,6 +1,7 @@
 import { ReactGrid,Row,Column,CellChange,TextCell } from "@silevis/reactgrid";
 import React,{ useEffect,useState } from "react";
 import {MaterialListType,PartListType,FromulaType,variableType,logicType,FromulaListType} from "./type";
+import formula from "excel-formula";
 
 type BomFormulaType = {
     allData : any;
@@ -10,30 +11,32 @@ type BomFormulaType = {
 
 export const getVariableData = ():variableType[] => {
     const vardata = [
+        {title:'WS1',code:'WS1'},
+        {title:'HS1',code:'HS1'},
+        {title:'WS2',code:'WS2'},
+        {title:'HS2',code:'HS2'},
+        {title:'WS3',code:'WS3'},
+        {title:'HS3',code:'HS3'},
+        {title:'WS4',code:'WS4'},
+        {title:'HS4',code:'HS4'},
+        {title:'WS5',code:'WS5'},
+        {title:'HS5',code:'HS5'},
+
+        {title:'W1',code:'W1'},
+        {title:'H1',code:'H1'},
+        {title:'W2',code:'W2'},
+        {title:'H2',code:'H2'},
+        {title:'W3',code:'W3'},
+        {title:'H3',code:'H3'},
+        {title:'W4',code:'W4'},
+        {title:'H4',code:'H4'},
+        {title:'W5',code:'W5'},
+        {title:'H5',code:'H5'},
+        
         {title:'Qty',code:'Q'},
         {title:'GlassThickness',code:'GTH'},
         {title:'Width',code:'W'},
         {title:'Height',code:'H'},
-        {title:'H1',code:'H1'},
-        {title:'HS1',code:'HS1'},
-        {title:'H2',code:'H2'},
-        {title:'HS2',code:'HS2'},
-        {title:'H3',code:'H3'},
-        {title:'HS3',code:'HS3'},
-        {title:'H4',code:'H4'},
-        {title:'HS4',code:'HS4'},
-        {title:'H5',code:'H5'},
-        {title:'HS5',code:'HS5'},
-        {title:'W1',code:'W1'},
-        {title:'WS1',code:'WS1'},
-        {title:'W2',code:'W2'},
-        {title:'WS2',code:'WS2'},
-        {title:'W3',code:'W3'},
-        {title:'WS3',code:'WS3'},
-        {title:'W4',code:'W4'},
-        {title:'WS4',code:'WS4'},
-        {title:'W5',code:'W5'},
-        {title:'WS5',code:'WS5'},
         {title:'Base to Window',code:'F.'},
         {title:'Handle Height',code:'C.'},
         {title:'Outer to Inner',code:'A.'},
@@ -61,18 +64,36 @@ const headerRow: Row = {
     ]
 };
 
-const getRows = (list: FromulaListType[]): Row[] => [
+const getRows = (list: FromulaListType[],variable:variableType[]): Row[] => [
     headerRow,
-    ...list.map<Row>((value, index) => ({
-      rowId: index,
-      cells: [
-        { type: "text", text: value.Varibale ? value.Varibale : ''},
-        { type: "text", text: value.Type ? value.Type : ''},
-        { type: "text", text: value.Colom ? value.Colom : ''},
-        { type: "text", text: value.Formula ? value.Formula : ''},
-        { type: "text", text: value.Result ? value.Result : ''},
-      ]
-    }))
+    ...list.map<Row>((value, index) => {
+        const resultCalucation =()=> {
+            let strFormula = value.Formula ? value.Formula : ''
+
+            variable.map((value)=>{
+                while(strFormula.includes(value.code)){
+                    strFormula = strFormula.replace(value.code,`${value.value}`)
+                }
+            })
+
+            try{
+                return eval(formula.toJavaScript(strFormula))
+            }catch{
+                return NaN
+            }
+        } 
+
+        return ({
+            rowId: index,
+            cells: [
+              { type: "text", text: value.Varibale ? value.Varibale : ''},
+              { type: "text", text: value.Type ? value.Type : ''},
+              { type: "text", text: value.Colom ? value.Colom : ''},
+              { type: "text", text: value.Formula ? value.Formula : ''},
+              { type: "text", text: `${resultCalucation()}`},
+            ]
+        })
+    })
 ];
 
 const getList = (): FromulaListType[] => {
@@ -89,12 +110,12 @@ const getList = (): FromulaListType[] => {
 
 const Formula = ({allData,setBom,bom}:BomFormulaType) => {
     const [subMenu,setSubMenu] = useState<{variable:boolean,logic:boolean}>({'variable':false,'logic':false})
-    const [variable,setVariable] = useState<variableType[] >(bom?.Formula?.variable.length > 0 ? bom.Formula.variable : getVariableData())
+    const [variable,setVariable] = useState<variableType[]>(bom?.Formula?.variable.length > 0 ? bom.Formula.variable : getVariableData())
     const [logic,setLogic] = useState<logicType[]>(bom?.Formula?.logic ? bom?.Formula?.logic : [])
-    const [list,setList] = useState<FromulaListType[]>(bom?.Formula?.FormulaList.length > 0 ? bom.Formula.FormulaList : getList());
+    const [list,setList] = useState<FromulaListType[]>(bom?.Formula?.FormulaList.length > 0 ? bom.Formula.FormulaList : []);
 
     const columns = getColumns();
-    const rows = getRows(list);
+    const rows = getRows(list,variable);
 
     const getVariableChange = (e:any) => {
         const title = e.target.id;
@@ -152,13 +173,72 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
         
     };
 
+    const getLogic = async () => {
+        let formulaLogic:{variable:string,formula:string}[] = new Array()
+        const arrayVariableLogic = [...new Set(logic.map((value)=>{return value.code}))]
+
+        await arrayVariableLogic.map((value)=>{
+            const arrayFromulaLogic = [...logic.filter((valueFromulaLogic)=>{
+                return valueFromulaLogic.code === value
+            })].sort((a,b)=>{
+                if ( a.number < b.number ){
+                    return -1;
+                }
+                if ( a.number > b.number ){
+                    return 1;
+                }
+                  return 0;
+            })
+
+            let formula = ''
+            let fromulaend = ''
+            arrayFromulaLogic.map((valueFromulaLogic)=>{
+                if(valueFromulaLogic.logic === '><' || valueFromulaLogic.logic === '><=' || valueFromulaLogic.logic === '>=<'|| valueFromulaLogic.logic === '>=<='){
+                    let AndFromula = ''
+                    if(valueFromulaLogic.logic === '>=<='){
+                        AndFromula = `AND(${valueFromulaLogic.variable}>=${valueFromulaLogic.valueInput1},${valueFromulaLogic.variable}<=${valueFromulaLogic.valueInput2})`
+                    }else if(valueFromulaLogic.logic === '><='){
+                        AndFromula = `AND(${valueFromulaLogic.variable}>${valueFromulaLogic.valueInput1},${valueFromulaLogic.variable}<=${valueFromulaLogic.valueInput2})`
+                    }else if(valueFromulaLogic.logic === '>=<'){
+                        AndFromula = `AND(${valueFromulaLogic.variable}>=${valueFromulaLogic.valueInput1},${valueFromulaLogic.variable}<${valueFromulaLogic.valueInput2})`
+                    }else{
+                        AndFromula = `AND(${valueFromulaLogic.variable}>${valueFromulaLogic.valueInput1},${valueFromulaLogic.variable}<${valueFromulaLogic.valueInput2})`
+                    }
+                    formula += `IF(${AndFromula},${valueFromulaLogic.valueOutput},`
+                    fromulaend += ')'
+                }else{
+                    formula += `IF((${valueFromulaLogic.variable+(valueFromulaLogic.logic ? valueFromulaLogic.logic : '<')+valueFromulaLogic.valueInput1}),${valueFromulaLogic.valueOutput},`
+                    fromulaend += ')' 
+                }
+            })
+            formulaLogic.push({variable:value,formula:formula+'0'+fromulaend})
+        })
+        return formulaLogic
+    }
+
+    const changeListToFromula = (formulaLogic:{variable:string,formula:string}[]) => {
+        const listchange = [...list.map((valuelist)=>{
+            const vairable = formulaLogic.find((valueformulaLogic)=> valuelist.Formula?.includes(valueformulaLogic.variable))
+            if(vairable)
+                return {
+                    ...valuelist,
+                    Formula:valuelist.Formula?.replace(vairable.variable,vairable.formula)
+                }
+            else
+                return valuelist
+        })]
+
+        setList(listchange)
+    }
+
     useEffect(()=>{
-        if(list != undefined && list.length > 0)
+        if(list != undefined)
             setBom({...bom,'Formula':{...bom.Formula,FormulaList:list}})
     },[list])
 
     
     useEffect(()=>{
+        console.log(logic)
         if(variable != getVariableData())
             setBom({...bom,'Formula':{...bom.Formula,variable:variable}})
         if(logic != undefined && logic.length > 0)
@@ -194,6 +274,7 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
                                         onClick={()=>setLogic(
                                             [...logic,
                                                 {id:logic.length+1,
+                                                number:logic.length + 1,
                                                 code:'',
                                                 variable:'',
                                                 logic:'',
@@ -205,6 +286,21 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
                                     >
                                         +
                                     </div>
+                                </th>
+                                <th 
+                                    className='border-2 border-black bg-blue-100 hover:bg-blue-500'
+                                    onClick={()=>{
+                                        setLogic([...logic.sort((a,b)=>{
+                                            if ( a.number < b.number ){
+                                                return -1;
+                                            }
+                                            if ( a.number > b.number ){
+                                                return 1;
+                                            }
+                                              return 0;
+                                        })])
+                                    }}
+                                >Num
                                 </th>
                                 <th className='border-2 border-black'>Variable</th>
                                 <th className='border-2 border-black'>Logic</th>
@@ -223,16 +319,16 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
                                                             id={`${value.id}`}
                                                             className="bg-red-100 hover:bg-red-500 text-center" 
                                                             onClick={(e:any)=>{
-                                                                let logicUpdate:logicType[] = []
-                                                                logic.forEach((value)=>{
-                                                                    if(e.target.id != value?.id)
-                                                                        logicUpdate=[...logicUpdate,value];
-                                                                })
-                                                                setLogic(logicUpdate)
+                                                                setLogic([...logic.filter((value)=>{
+                                                                    return e.target.id != value?.id
+                                                                })])
                                                             }}
                                                         >
                                                             -
                                                         </div>
+                                                    </td>
+                                                    <td className="border-2 border-black">
+                                                        <input type="number" id={`number-${value.id}`} className="w-full px-1" value={value.number} onChange={getLogicChange} />
                                                     </td>
                                                     <td className="border-2 border-black">
                                                         <input type="text" id={`code-${value.id}`} className="w-full px-1" value={value.code} onChange={getLogicChange} />
@@ -245,10 +341,10 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
                                                             id={`logic-${value.id}`} 
                                                             className='w-[45%] text-center' 
                                                             onChange={getLogicChange}
-                                                            value={value.logic}
                                                         >
-                                                            <option value='<'>less ({'<'})</option>
+                                                            <option value='<' selected={true}>less ({'<'})</option>
                                                             <option value='<='>less ({'<='})</option>
+                                                            <option value='><'>between ({'>,<'})</option>
                                                             <option value='>=<='>between ({'>=,<='})</option>
                                                             <option value='>=<'>between ({'>=,<'})</option>
                                                             <option value='><='>between ({'>,<='})</option>
@@ -276,9 +372,10 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
 
                             <tr>
                                 <td className="w-[5%]"></td>
+                                <td className="w-[5%]"></td>
                                 <td className="w-[20%]"></td>
                                 <td className="w-[30%]"></td>
-                                <td className="w-[25%]"></td>
+                                <td className="w-[20%]"></td>
                                 <td className="w-[20%]"></td>
                             </tr>
                             
@@ -290,6 +387,11 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
         <div className="flex gap-2 bg-blue-200 px-2 py-1 rounded-md">
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([])}>Clear</div>
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([...getList(),...list])}>Add Row</div>
+            <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>{
+                getLogic().then((data)=>{
+                    changeListToFromula(data)
+                })
+            }}>Change Varabel Logic</div>
         </div>
         <div className="w-full text-xs overflow-auto pb-3 border-2 h-96">
             <ReactGrid rows={rows} columns={columns} onCellsChanged={(changes: CellChange<any>[]) => {applyChangesToList(changes)}} />

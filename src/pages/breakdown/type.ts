@@ -46,6 +46,7 @@ export type variableType = {
 
 export type logicType = {
     id:number;
+    number:number;
     code:string;
     variable:string;
     logic:string;

@@ -1,6 +1,6 @@
 // standar list pagess
 import * as XLSX from "xlsx";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import TableMaterial from "./tableMaterial";
 import {dataSubHeaderType,dataType} from "./type";

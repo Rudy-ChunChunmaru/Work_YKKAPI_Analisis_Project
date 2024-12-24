@@ -1,6 +1,6 @@
 import { ReactGrid,Row,Column,CellChange,TextCell } from "@silevis/reactgrid";
 import React,{ useEffect,useState } from "react";
-import {MaterialListType,PartListType,FromulaType} from "./type";
+import {MaterialListType,PartListType,FromulaType,FromulaListType} from "./type";
 
 type PartType = {
     allData : any;
@@ -182,8 +182,86 @@ const Part = ({allData,setBom,bom}:PartType) => {
         
     };
 
-   
 
+    const makeFormula = async () =>{
+        let newFromulaArray:FromulaListType[] = new Array()
+
+        const chekFromula = async(strformula:string,colom:string) => {
+            let status = true
+
+            await bom.Formula.FormulaList.map((value)=>{
+                if(value.Formula == strformula && value.Type == 'p' && value.Colom == colom)
+                    status = false
+            })
+                
+            return {
+                status : status,
+                formula : strformula
+            }
+        }
+
+        const addNewFormula = (Formula:string | undefined,colom:string) => {
+            if(newFromulaArray.filter((datavalue)=>datavalue.Formula == Formula && datavalue.Colom == colom).length == 0){
+                newFromulaArray.push({
+                    'Varibale': '',
+                    'Type': 'p',
+                    'Colom': colom,
+                    'Formula': Formula,
+                    'Result': '',
+                })
+            }
+        }
+
+      
+        await ['HS','WS','N',...bom.Formula.variable.map((value)=>value.code)].map((value)=>{
+            list.map((valueList)=>{
+                if(valueList.QtyUnit?.includes(value)){
+                    chekFromula(valueList.QtyUnit,'QtyUnit').then((resultchek)=>{
+                        resultchek.status && addNewFormula(valueList.QtyUnit,'QtyUnit')
+                    })
+                }
+            })
+        })
+
+        return newFromulaArray
+    }
+
+    const saveFormula = (data:FromulaListType[]) =>{
+        const countLengDataM =  bom.Formula.FormulaList.filter((value)=>value.Type == 'p').length;
+        const addvariableindataFromula = [
+            ...data.map((val,ind)=>{
+                const varibale = `p${countLengDataM + ind + 1}`
+                return {
+                    ...val,
+                    Varibale:varibale
+                }
+            })
+        ]
+
+        setBom({...bom,'Formula':{...bom.Formula,
+            FormulaList:[...bom.Formula.FormulaList,...addvariableindataFromula]
+        }})
+
+        return addvariableindataFromula
+    }
+
+    const changeListToFromula = (data:FromulaListType[]) => {
+        const listchange = [...list.map((valuelist)=>{
+            const vairable = data.find((valuedata)=>valuedata.Formula == valuelist.QtyUnit)
+            if(vairable)
+                return {
+                    ...valuelist,
+                    QtyUnit:vairable.Varibale
+                }
+            else
+                return valuelist
+                
+        })]
+
+        setList(listchange)
+    }
+
+   
     useEffect(()=>{
         if(list != undefined && list != getList())
             setBom({...bom,'PartBom':list})
@@ -195,6 +273,12 @@ const Part = ({allData,setBom,bom}:PartType) => {
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList(loadList())}>Load Data</div>
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([])}>Clear</div>
             <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>setList([...getList(),...list])}>Add Row</div>
+
+            <div className="border-2 border-black rounded-md px-2 hover:px-3" onClick={()=>{
+                makeFormula().then((data)=>{
+                    changeListToFromula(saveFormula(data))
+                })
+            }}>Make Formula</div>
         </div>
         <div className="relative rela w-full text-xs overflow-auto p-b-3 border-2 h-96">
             <ReactGrid rows={rows} columns={columns} onCellsChanged={(changes: CellChange<any>[]) => {applyChangesToList(changes)}} />
