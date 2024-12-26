@@ -4,7 +4,6 @@ import {MaterialListType,PartListType,FromulaType,variableType,logicType,Fromula
 import formula from "excel-formula";
 
 type BomFormulaType = {
-    allData : any;
     setBom : React.Dispatch<React.SetStateAction<{MaterialBom: MaterialListType[];PartBom: PartListType[];Formula: FromulaType;}>>;
     bom : {MaterialBom: MaterialListType[];PartBom: PartListType[];Formula: FromulaType;};
 }
@@ -46,11 +45,12 @@ export const getVariableData = ():variableType[] => {
 }
 
 const getColumns = (): Column[] => [
-    { columnId: "Varibale", width: 100 },
+    { columnId: "Varibale", width: 50 },
     { columnId: "Type", width: 50 },
     { columnId: "Colom", width: 100 },
-    { columnId: "Formula", width: 600 },
-    { columnId: "Result", width: 300 },
+    { columnId: "Formula", width: 250 },
+    { columnId: "FormaterFormula", width: 600 },
+    { columnId: "Result", width: 100 },
 ];
 
 const headerRow: Row = {
@@ -60,6 +60,7 @@ const headerRow: Row = {
         { text: "Type", type:"header" },
         { text: "Colom", type:"header" },
         { text: "Formula", type:"header" },
+        { text: "FormaterFormula", type:"header" },
         { text: "Result", type:"header" },
     ]
 };
@@ -67,21 +68,32 @@ const headerRow: Row = {
 const getRows = (list: FromulaListType[],variable:variableType[]): Row[] => [
     headerRow,
     ...list.map<Row>((value, index) => {
-        const resultCalucation =()=> {
-            let strFormula = value.Formula ? value.Formula : ''
+        
+        const resultFormulaFormater = () => {
+            let strFormulaFormater = value.FormaterFormula ? value.FormaterFormula : value.Formula
 
+            return strFormulaFormater
+        }
+
+
+        const resultCalucation =()=> {
+            let strFormula = resultFormulaFormater()
+            
             variable.map((value)=>{
-                while(strFormula.includes(value.code)){
-                    strFormula = strFormula.replace(value.code,`${value.value}`)
+                if(strFormula != undefined){
+                    while(strFormula.includes(value.code)){
+                        strFormula = strFormula.replace(value.code,`${value.value}`)
+                    }
                 }
             })
-
+            
             try{
                 return eval(formula.toJavaScript(strFormula))
             }catch{
                 return NaN
             }
-        } 
+          
+        }
 
         return ({
             rowId: index,
@@ -90,6 +102,7 @@ const getRows = (list: FromulaListType[],variable:variableType[]): Row[] => [
               { type: "text", text: value.Type ? value.Type : ''},
               { type: "text", text: value.Colom ? value.Colom : ''},
               { type: "text", text: value.Formula ? value.Formula : ''},
+              { type: "text", text: `${resultFormulaFormater()}`},
               { type: "text", text: `${resultCalucation()}`},
             ]
         })
@@ -103,12 +116,13 @@ const getList = (): FromulaListType[] => {
             'Type': '',
             'Colom': '',
             'Formula': '',
+            'FormaterFormula': '',
             'Result': '',
         }
     ]
 };
 
-const Formula = ({allData,setBom,bom}:BomFormulaType) => {
+const Formula = ({setBom,bom}:BomFormulaType) => {
     const [subMenu,setSubMenu] = useState<{variable:boolean,logic:boolean}>({'variable':false,'logic':false})
     const [variable,setVariable] = useState<variableType[]>(bom?.Formula?.variable.length > 0 ? bom.Formula.variable : getVariableData())
     const [logic,setLogic] = useState<logicType[]>(bom?.Formula?.logic ? bom?.Formula?.logic : [])
@@ -222,7 +236,7 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
             if(vairable)
                 return {
                     ...valuelist,
-                    Formula:valuelist.Formula?.replace(vairable.variable,vairable.formula)
+                    FormaterFormula:valuelist.Formula?.replace(vairable.variable,vairable.formula)
                 }
             else
                 return valuelist
@@ -341,8 +355,9 @@ const Formula = ({allData,setBom,bom}:BomFormulaType) => {
                                                             id={`logic-${value.id}`} 
                                                             className='w-[45%] text-center' 
                                                             onChange={getLogicChange}
+                                                            value={value.logic}
                                                         >
-                                                            <option value='<' selected={true}>less ({'<'})</option>
+                                                            <option value='<'>less ({'<'})</option>
                                                             <option value='<='>less ({'<='})</option>
                                                             <option value='><'>between ({'>,<'})</option>
                                                             <option value='>=<='>between ({'>=,<='})</option>

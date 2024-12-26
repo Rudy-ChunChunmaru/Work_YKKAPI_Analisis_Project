@@ -35,6 +35,7 @@ export type FromulaListType = {
     Type ?:string;
     Colom ?:string;
     Formula ?:string;
+    FormaterFormula ?:string;
     Result?:string;
 }
 

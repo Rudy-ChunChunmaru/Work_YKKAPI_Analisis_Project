@@ -1,3 +1,5 @@
+import { MaterialListType,PartListType,FromulaType } from "../breakdown/type";
+
 export type dataSubHeaderType = {
     title: string;
     colom_start: number;
@@ -12,10 +14,12 @@ export type dataType = {
 export type dataLocalstorageType = {
     id:string,
     name:string,
+    brand:string,
     category:string,
     note:string,
     headerMaterial:dataSubHeaderType[],
     dataMaterial:dataType[][],
     headerPart:dataSubHeaderType[],
     dataPart:dataType[][]
+    breakdown?:{'MaterialBom':MaterialListType[],'PartBom':PartListType[],'Formula':FromulaType}
 }

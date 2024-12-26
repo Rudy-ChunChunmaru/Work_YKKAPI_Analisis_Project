@@ -94,13 +94,8 @@ const SaveStandarList = ({nameExeclSheet,materialHeader,material,partHeader,part
                 );
             }
         }
-        
-
-        
-
-
-        
     }
+    
    return <div className="w-full h-full absolute z-10 bg-slate-950/75">
         <div className="fixed w-full h-full flex justify-center items-center">
             <div className="absolute bg-white w-fit p-5 rounded-xl flex flex-col justify-start gap-2 ">
